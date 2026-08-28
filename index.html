@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aman Pratap Singh · PL/SQL & Python Developer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <style>
+    /* ---------- TOKENS ---------- */
+    :root {
+      --bg:            #0B0E14;
+      --surface:       #12161F;
+      --surface-alt:   #161B26;
+      --border:        #242B3B;
+      --border-soft:   #1B2130;
+      --text:          #E7E9F1;
+      --text-dim:      #8991A6;
+      --text-faint:    #5A6178;
+      --sql:           #E8A33D;
+      --sql-soft:      rgba(232,163,61,0.12);
+      --py:            #4FD9C0;
+      --py-soft:       rgba(79,217,192,0.12);
+      --danger:        #E9636B;
+      --font-display:  'Space Grotesk', sans-serif;
+      --font-body:     'Inter', sans-serif;
+      --font-mono:     'JetBrains Mono', monospace;
+      --radius-sm: 6px;
+      --radius-md: 12px;
+      --radius-lg: 20px;
+      --ease: cubic-bezier(.4,0,.2,1);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body {
+      background:var(--bg);
+      color:var(--text);
+      font-family:var(--font-body);
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
+    }
+    h1,h2,h3 { font-family:var(--font-display); letter-spacing:-0.02em; }
+    a { color:inherit; text-decoration:none; }
+    ul { list-style:none; }
+    .dim { color:var(--text-faint); }
+    .tag {
+      font-family:var(--font-mono);
+      font-size:.72rem;
+      color:var(--text-faint);
+      margin-right:.5em;
+    }
+
+    /* ---------- BG ---------- */
+    .bg-grid {
+      position:fixed; inset:0; z-index:-1; pointer-events:none;
+      background-image:
+        linear-gradient(rgba(231,233,241,0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(231,233,241,0.035) 1px, transparent 1px);
+      background-size:64px 64px;
+      mask-image:radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 90%);
+    }
+    .scroll-progress {
+      position:fixed; top:0; left:0; height:2px; width:0%;
+      background:linear-gradient(90deg,var(--sql),var(--py));
+      z-index:1000; transition:width .1s linear;
+    }
+
+    /* ---------- LAYOUT ---------- */
+    .section { padding:6rem 0; border-bottom:1px solid var(--border-soft); }
+    .section--alt { background:var(--surface); }
+    .section-inner, .nav-inner, .hero-inner, .footer-inner {
+      max-width:1180px; margin:0 auto; padding:0 2rem;
+    }
+    .section-eyebrow {
+      font-family:var(--font-mono);
+      font-size:.85rem; color:var(--text-dim);
+      display:flex; align-items:center; margin-bottom:1rem;
+    }
+    .section-title {
+      font-size:clamp(1.8rem, 3.4vw, 2.6rem);
+      font-weight:600; margin-bottom:2.5rem; max-width:20ch;
+    }
+    .section-sub { margin-top:-1.5rem; margin-bottom:2.5rem; color:var(--text-dim); max-width:60ch; }
+
+    /* ---------- REVEAL ---------- */
+    .reveal { opacity:0; transform:translateY(24px); transition:opacity .7s var(--ease), transform .7s var(--ease); }
+    .reveal.is-visible { opacity:1; transform:none; }
+
+    /* ---------- BUTTONS ---------- */
+    .btn {
+      display:inline-flex; align-items:center; justify-content:center; gap:.5em;
+      font-family:var(--font-mono); font-size:.9rem; font-weight:500;
+      padding:.85em 1.6em; border-radius:var(--radius-sm);
+      border:1px solid transparent; transition:transform .2s var(--ease), background .2s, border-color .2s, color .2s;
+      white-space:nowrap;
+    }
+    .btn:hover{ transform:translateY(-2px); }
+    .btn-primary{ background:var(--sql); color:#141008; }
+    .btn-primary:hover{ background:#f0b155; }
+    .btn-outline{ border-color:var(--border); color:var(--text); }
+    .btn-outline:hover{ border-color:var(--py); color:var(--py); }
+    .btn-ghost{ color:var(--text-dim); border:1px solid var(--border); }
+    .btn-ghost:hover{ color:var(--py); border-color:var(--py); }
+
+    /* ---------- NAV ---------- */
+    .nav {
+      position:fixed; top:0; left:0; right:0; z-index:900;
+      backdrop-filter:blur(10px);
+      background:rgba(11,14,20,0.72);
+      border-bottom:1px solid var(--border-soft);
+    }
+    .nav-inner {
+      display:flex; align-items:center; justify-content:space-between;
+      height:72px;
+    }
+    .nav-brand { display:flex; align-items:center; gap:.5rem; font-family:var(--font-mono); font-weight:600; font-size:1.05rem; }
+    .nav-brand-mark{ color:var(--sql); }
+    .nav-links{ display:flex; gap:2rem; }
+    .nav-link {
+      font-family:var(--font-mono); font-size:.85rem; color:var(--text-dim);
+      display:flex; align-items:center; transition:color .2s;
+    }
+    .nav-link:hover, .nav-link.active{ color:var(--text); }
+    .nav-link.active .tag{ color:var(--py); }
+    .nav-toggle {
+      display:none; flex-direction:column; gap:5px; background:none; border:none; padding:8px;
+    }
+    .nav-toggle span{ width:22px; height:2px; background:var(--text); border-radius:2px; transition:transform .3s var(--ease), opacity .3s; }
+    .nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .nav-toggle.open span:nth-child(2){ opacity:0; }
+    .nav-toggle.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    /* ---------- HERO ---------- */
+    .hero {
+      min-height:100vh;
+      display:flex; flex-direction:column; justify-content:center;
+      padding-top:110px; position:relative;
+    }
+    .hero-inner {
+      display:grid; grid-template-columns:1.05fr .95fr; gap:3rem; align-items:center;
+    }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:.6em;
+      font-family:var(--font-mono); font-size:.85rem; color:var(--py);
+      border:1px solid var(--border); padding:.4em .9em; border-radius:100px;
+      margin-bottom:1.75rem;
+    }
+    .dot { width:7px; height:7px; border-radius:50%; background:var(--py); box-shadow:0 0 0 0 rgba(79,217,192,.6); animation:pulse 2s infinite; }
+    @keyframes pulse {
+      0%{ box-shadow:0 0 0 0 rgba(79,217,192,.5); }
+      70%{ box-shadow:0 0 0 8px rgba(79,217,192,0); }
+      100%{ box-shadow:0 0 0 0 rgba(79,217,192,0); }
+    }
+    .hero-title {
+      font-size:clamp(2.8rem, 6vw, 4.6rem);
+      font-weight:700; line-height:1.02;
+    }
+    .hero-title-accent {
+      background:linear-gradient(90deg, var(--sql), var(--py));
+      -webkit-background-clip:text; background-clip:text; color:transparent;
+    }
+    .hero-role {
+      display:flex; align-items:center; flex-wrap:wrap; gap:.6rem;
+      margin:1.5rem 0 1.4rem;
+      font-family:var(--font-mono);
+    }
+    .role-chip {
+      padding:.35em .8em; border-radius:6px; font-size:.95rem; font-weight:600;
+      border:1px solid;
+    }
+    .role-chip--sql{ color:var(--sql); border-color:var(--sql); background:var(--sql-soft); }
+    .role-chip--py{ color:var(--py); border-color:var(--py); background:var(--py-soft); }
+    .role-word{ color:var(--text-dim); font-size:1.05rem; margin-left:.2rem; }
+    .hero-desc{ max-width:46ch; color:var(--text-dim); font-size:1.05rem; margin-bottom:2.2rem; }
+    .hero-actions{ display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:2.5rem; }
+
+    /* ---------- CONSOLE (hero) ---------- */
+    .console{
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md);
+      overflow:hidden; box-shadow:0 30px 60px -20px rgba(0,0,0,.6);
+    }
+    .console-bar{
+      display:flex; align-items:center; gap:.4rem;
+      padding:.8rem 1rem; background:var(--surface-alt); border-bottom:1px solid var(--border);
+    }
+    .console-dot{ width:10px; height:10px; border-radius:50%; background:var(--border); }
+    .console-dot:nth-child(1){ background:#E9636B; }
+    .console-dot:nth-child(2){ background:var(--sql); }
+    .console-dot:nth-child(3){ background:var(--py); }
+    .console-title{ margin-left:.6rem; font-family:var(--font-mono); font-size:.78rem; color:var(--text-faint); }
+    .console-body{ padding:1.4rem 1.2rem; font-family:var(--font-mono); font-size:.88rem; }
+    .console-line{ margin:0 0 .5rem; white-space:pre-wrap; }
+    .ln{ color:var(--text-faint); display:inline-block; width:1.4em; user-select:none; }
+    .c-kw{ color:var(--py); }
+    .c-str{ color:var(--sql); }
+    .caret{ color:var(--py); animation:blink 1s step-end infinite; }
+    @keyframes blink{ 50%{ opacity:0; } }
+    .console-result{
+      margin-top:1rem; border-top:1px dashed var(--border); padding-top:1rem;
+      opacity:0; transform:translateY(6px); transition:opacity .5s var(--ease), transform .5s var(--ease);
+    }
+    .console-result.show{ opacity:1; transform:none; }
+    .result-head{
+      display:grid; grid-template-columns:1.3fr 1.5fr 1fr; gap:.6rem;
+      color:var(--text-faint); font-size:.72rem; letter-spacing:.06em; margin-bottom:.5rem;
+    }
+    .result-row{
+      display:grid; grid-template-columns:1.3fr 1.5fr 1fr; gap:.6rem;
+      color:var(--text); font-size:.8rem; background:var(--surface-alt);
+      padding:.6rem .5rem; border-radius:6px; border:1px solid var(--border-soft);
+    }
+
+    /* ---------- ABOUT (improved) ---------- */
+    .about-grid{
+      display:grid; grid-template-columns:1.4fr 1fr; gap:3.5rem; align-items:start;
+    }
+    .about-text p{
+      color:var(--text-dim);
+      margin-bottom:1.1rem;
+      max-width:62ch;
+      font-size:1.02rem;
+    }
+    .about-text p:first-of-type {
+      color:var(--text);
+      font-weight:500;
+    }
+    .about-stats{
+      display:grid; grid-template-columns:1fr 1fr; gap:1.2rem;
+    }
+    .about-stats li{
+      border:1px solid var(--border); border-radius:var(--radius-md); padding:1.2rem;
+      background:var(--surface);
+      transition:border-color 0.2s, transform 0.2s var(--ease);
+    }
+    .about-stats li:hover {
+      border-color:var(--py);
+      transform:translateY(-3px);
+    }
+    .about-stat-num{
+      display:block; font-family:var(--font-display); font-weight:700; font-size:1.3rem;
+      color:var(--sql); margin-bottom:.4rem;
+    }
+    .about-stat-label{ font-size:.82rem; color:var(--text-dim); }
+
+    /* ==========================================================
+       ✦ SKILLS — redesigned with professional icons (Font Awesome)
+       ========================================================== */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-top: 0.5rem;
+    }
+    .skill-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1.2rem 1.4rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      transition: border-color 0.25s, transform 0.2s var(--ease);
+    }
+    .skill-card:hover {
+      border-color: var(--py);
+      transform: translateY(-3px);
+    }
+    .skill-card-top {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    .skill-icon {
+      font-size: 1.6rem;
+      width: 2.4rem;
+      text-align: center;
+      color: var(--sql);
+      flex-shrink: 0;
+    }
+    .skill-name {
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+    .skill-type {
+      margin-left: auto;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      border: 1px solid var(--border-soft);
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+    }
+    .skill-bar {
+      width: 100%;
+      height: 6px;
+      background: var(--surface-alt);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 0.2rem;
+    }
+    .skill-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--sql), var(--py));
+      transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .skill-card.in-view .skill-bar-fill {
+      width: var(--lvl);
+    }
+
+    /* ---------- EDUCATION ---------- */
+    .log{ position:relative; padding-left:2.4rem; }
+    .log::before{
+      content:''; position:absolute; left:9px; top:6px; bottom:6px; width:2px;
+      background:linear-gradient(var(--sql), var(--py));
+      opacity:.4;
+    }
+    .log-item{ position:relative; padding-bottom:2.6rem; }
+    .log-item:last-child{ padding-bottom:0; }
+    .log-marker{ position:absolute; left:-2.4rem; top:2px; width:20px; display:flex; justify-content:center; }
+    .log-tag{
+      font-family:var(--font-mono); font-size:.68rem; color:var(--bg); background:var(--py);
+      padding:.3em .5em; border-radius:100px; font-weight:700;
+    }
+    .log-content h3{ font-size:1.25rem; font-weight:600; margin-bottom:.4rem; }
+    .log-meta{ font-family:var(--font-mono); font-size:.85rem; color:var(--sql); margin-bottom:.5rem; }
+    .log-desc{ color:var(--text-dim); max-width:60ch; }
+    .edit-note{ color:var(--sql); font-family:var(--font-mono); font-size:.78rem; opacity:.75; }
+
+    /* ---------- PROJECTS ---------- */
+    .projects-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+    .project-card{
+      background:var(--bg); border:1px solid var(--border); border-radius:var(--radius-md);
+      padding:1.6rem; display:flex; flex-direction:column; gap:.9rem;
+      transition:transform .3s var(--ease), border-color .3s;
+    }
+    .project-card:hover{ transform:translateY(-6px); border-color:var(--py); }
+    .project-head{ display:flex; justify-content:space-between; align-items:center; }
+    .project-lang{
+      font-family:var(--font-mono); font-size:.72rem; font-weight:600; padding:.3em .7em; border-radius:100px;
+      border:1px solid;
+    }
+    .project-lang--sql{ color:var(--sql); border-color:var(--sql); background:var(--sql-soft); }
+    .project-lang--py{ color:var(--py); border-color:var(--py); background:var(--py-soft); }
+    .project-lang--web{ color:#9EA8FF; border-color:#9EA8FF; background:rgba(158,168,255,.1); }
+    .project-status{ font-family:var(--font-mono); font-size:.7rem; color:var(--text-faint); }
+    .project-card h3{ font-size:1.1rem; font-weight:600; }
+    .project-card p{ color:var(--text-dim); font-size:.92rem; flex-grow:1; }
+    .project-tags{ display:flex; flex-wrap:wrap; gap:.5rem; }
+    .project-tags span{
+      font-family:var(--font-mono); font-size:.7rem; color:var(--text-dim);
+      border:1px solid var(--border-soft); padding:.25em .6em; border-radius:5px;
+    }
+    .project-links{ display:flex; gap:1.2rem; margin-top:.3rem; }
+    .project-link{ font-family:var(--font-mono); font-size:.82rem; color:var(--py); transition:opacity .2s; }
+    .project-link:hover{ opacity:.7; }
+
+    /* ==========================================================
+       CONTACT — redesigned with icon + clean cards
+       ========================================================== */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr;
+      gap: 3rem;
+    }
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+    .field label {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--text-dim);
+      text-transform: lowercase;
+    }
+    .field input, .field textarea {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: .85em 1em;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: .95rem;
+      transition: border-color .2s;
+      resize: vertical;
+    }
+    .field input:focus, .field textarea:focus {
+      outline: none;
+      border-color: var(--py);
+    }
+    .field-error {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--danger);
+      min-height: 1em;
+    }
+    .form-status {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--py);
+      min-height: 1.2em;
+    }
+
+    .contact-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+    .contact-info-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.2rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      background: var(--surface);
+      transition: border-color 0.2s, transform 0.15s var(--ease), background 0.2s;
+    }
+    .contact-info-item:hover {
+      border-color: var(--sql);
+      transform: translateX(5px);
+      background: var(--surface-alt);
+    }
+    .contact-info-icon {
+      font-size: 1.3rem;
+      color: var(--sql);
+      width: 2rem;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .contact-info-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.1rem;
+      overflow: hidden;
+    }
+    .contact-info-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-faint);
+    }
+    .contact-info-value {
+      font-size: 0.92rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+    .contact-info-item a.contact-info-value {
+      transition: color 0.2s;
+    }
+    .contact-info-item a.contact-info-value:hover {
+      color: var(--py);
+    }
+
+    /* ---------- FOOTER / TO TOP ---------- */
+    .footer{ padding:2.5rem 0; }
+    .footer-inner{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+    .footer-inner p{ color:var(--text-faint); font-size:.85rem; }
+    .to-top{
+      position:fixed; right:1.6rem; bottom:1.6rem; width:44px; height:44px; border-radius:50%;
+      background:var(--surface); border:1px solid var(--border); color:var(--text);
+      display:flex; align-items:center; justify-content:center; font-size:1.1rem;
+      opacity:0; pointer-events:none; transform:translateY(10px);
+      transition:opacity .3s, transform .3s, border-color .2s;
+      z-index:500;
+    }
+    .to-top.show{ opacity:1; pointer-events:auto; transform:none; }
+    .to-top:hover{ border-color:var(--py); color:var(--py); }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 980px){
+      .hero-inner{ grid-template-columns:1fr; }
+      .hero-console{ order:-1; }
+      .about-grid{ grid-template-columns:1fr; }
+      .about-stats{ grid-template-columns:1fr 1fr; }
+      .projects-grid{ grid-template-columns:1fr 1fr; }
+      .contact-grid{ grid-template-columns:1fr; }
+    }
+    @media (max-width: 760px){
+      .nav-links{
+        position:fixed; top:72px; left:0; right:0; bottom:0;
+        background:var(--bg); flex-direction:column; gap:0;
+        padding:1rem 2rem; transform:translateX(100%); transition:transform .35s var(--ease);
+        border-top:1px solid var(--border-soft);
+      }
+      .nav-links.open{ transform:translateX(0); }
+      .nav-link{ padding:1rem 0; border-bottom:1px solid var(--border-soft); font-size:1rem; }
+      .nav-toggle{ display:flex; }
+      .projects-grid{ grid-template-columns:1fr; }
+      .about-stats{ grid-template-columns:1fr; }
+      .skills-grid { grid-template-columns:1fr; }
+      .contact-info-item { padding: 0.8rem 1rem; }
+    }
+    @media (max-width: 480px){
+      .section{ padding:5rem 0; }
+      .hero{ padding-top:100px; }
+      .hero-actions{ flex-direction:column; align-items:stretch; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid" aria-hidden="true"></div>
+<div class="scroll-progress" id="scrollProgress" aria-hidden="true"></div>
+
+<!-- ========== NAV ========== -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="nav-brand">
+      <span class="nav-brand-mark">&gt;_</span>
+      <span class="nav-brand-text">aman<span class="dim">.</span>dev</span>
+    </a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#about" class="nav-link"><span class="tag">01</span>about</a>
+      <a href="#skills" class="nav-link"><span class="tag">02</span>skills</a>
+      <a href="#education" class="nav-link"><span class="tag">03</span>education</a>
+      <a href="#projects" class="nav-link"><span class="tag">04</span>projects</a>
+      <a href="#contact" class="nav-link"><span class="tag">05</span>contact</a>
+    </nav>
+    <a href="#contact" class="btn btn-ghost nav-cta">connect()</a>
+    <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ========== HERO ========== -->
+  <section class="hero" id="hero">
+    <div class="hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="dot"></span>available for opportunities</p>
+        <h1 class="hero-title">Aman Pratap<br><span class="hero-title-accent">Singh</span></h1>
+        <p class="hero-role">
+          <span class="role-chip role-chip--sql">PL/SQL</span>
+          <span class="role-plus">+</span>
+          <span class="role-chip role-chip--py">Python</span>
+          <span class="role-word">Developer</span>
+        </p>
+        <p class="hero-desc">I design efficient database logic and build clean, reliable software — turning raw data and requirements into systems that run without drama. MCA graduate, backend at heart.</p>
+        <div class="hero-actions">
+          <a href="#projects" class="btn btn-primary">View Projects</a>
+          <a href="#contact" class="btn btn-outline">Get in Touch</a>
+        </div>
+      </div>
+      <div class="hero-console" aria-hidden="true">
+        <div class="console">
+          <div class="console-bar">
+            <span class="console-dot"></span><span class="console-dot"></span><span class="console-dot"></span>
+            <span class="console-title">developer.sql</span>
+          </div>
+          <div class="console-body">
+            <pre class="console-line"><span class="ln">1</span><span class="c-kw">SELECT</span> name, role, degree</pre>
+            <pre class="console-line"><span class="ln">2</span><span class="c-kw">FROM</span> developers</pre>
+            <pre class="console-line"><span class="ln">3</span><span class="c-kw">WHERE</span> name = <span class="c-str">'Aman Pratap Singh'</span>;</pre>
+            <pre class="console-line"><span class="ln">4</span><span id="typedLine" class="c-out"></span><span class="caret">▌</span></pre>
+            <div class="console-result" id="consoleResult">
+              <div class="result-head"><span>NAME</span><span>ROLE</span><span>DEGREE</span></div>
+              <div class="result-row"><span>Aman Pratap Singh</span><span>PL/SQL &amp; Python Dev</span><span>MCA (AKTU)</span></div>
+              <div class="result-foot">1 row returned</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== ABOUT (improved) ========== -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <p class="section-eyebrow"><span class="tag">01</span> about</p>
+      <h2 class="section-title">Backend logic, written clearly.</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>I'm Aman Pratap Singh, a PL/SQL and Python developer who enjoys the part of software that most people never see — the queries, procedures, and scripts that quietly keep everything running correctly.</p>
+          <p>My work sits at the intersection of data and logic: writing PL/SQL packages and tuned queries on one side, and Python scripts, automation, and application logic on the other. I hold an MCA from RBMI College, Bareilly, affiliated with AKTU, and I care about code that is correct, readable, and easy to hand off.</p>
+        </div>
+        <ul class="about-stats">
+          <li><span class="about-stat-num">MCA</span><span class="about-stat-label">Master of Computer Applications</span></li>
+          <li><span class="about-stat-num">PL/SQL</span><span class="about-stat-label">Database logic &amp; query tuning</span></li>
+          <li><span class="about-stat-num">Python</span><span class="about-stat-label">Scripting &amp; application development</span></li>
+          <li><span class="about-stat-num">AKTU</span><span class="about-stat-label">Dr. A.P.J. Abdul Kalam Technical University</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SKILLS ========== -->
+  <section class="section section--alt" id="skills">
+    <div class="section-inner">
+      <p class="section-eyebrow"><span class="tag">02</span> skills</p>
+      <h2 class="section-title">My toolset.</h2>
+      <div class="skills-grid" id="skillsGrid">
+        <div class="skill-card" style="--lvl:92%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fas fa-database"></i></span>
+            <span class="skill-name">PL/SQL</span>
+            <span class="skill-type">database</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:88%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fab fa-python"></i></span>
+            <span class="skill-name">Python</span>
+            <span class="skill-type">language</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:85%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fas fa-cloud"></i></span>
+            <span class="skill-name">Oracle DB</span>
+            <span class="skill-type">database</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:80%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fas fa-table"></i></span>
+            <span class="skill-name">SQL / MySQL</span>
+            <span class="skill-type">database</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:75%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fas fa-code"></i></span>
+            <span class="skill-name">Django / Flask</span>
+            <span class="skill-type">framework</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:78%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fas fa-plug"></i></span>
+            <span class="skill-name">REST APIs</span>
+            <span class="skill-type">integration</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:70%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fab fa-git-alt"></i></span>
+            <span class="skill-name">Git &amp; Version Control</span>
+            <span class="skill-type">tooling</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+        <div class="skill-card" style="--lvl:65%">
+          <div class="skill-card-top">
+            <span class="skill-icon"><i class="fab fa-linux"></i></span>
+            <span class="skill-name">Linux</span>
+            <span class="skill-type">systems</span>
+          </div>
+          <div class="skill-bar"><div class="skill-bar-fill"></div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== EDUCATION ========== -->
+  <section class="section" id="education">
+    <div class="section-inner">
+      <p class="section-eyebrow"><span class="tag">03</span> education</p>
+      <h2 class="section-title">Migration log.</h2>
+      <div class="log">
+        <div class="log-item">
+          <div class="log-marker"><span class="log-tag">v2.0</span></div>
+          <div class="log-content">
+            <h3>Master of Computer Applications (MCA)</h3>
+            <p class="log-meta">RBMI College, Bareilly &nbsp;·&nbsp; Affiliated to AKTU</p>
+            <p class="log-desc edit-note">8.5 CGPA</p>
+          </div>
+        </div>
+        <div class="log-item">
+          <div class="log-marker"><span class="log-tag">v1.0</span></div>
+          <div class="log-content">
+            <h3>Bachelor of Science</h3>
+            <p class="log-meta edit-note">Bareilly College, Bareilly &nbsp;·&nbsp; Affiliated to MJPRU</p>
+            <p class="log-desc edit-note">66%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== PROJECTS ========== -->
+  <section class="section section--alt" id="projects">
+    <div class="section-inner">
+      <p class="section-eyebrow"><span class="tag">04</span> projects</p>
+      <h2 class="section-title">Query results.</h2>
+      <div class="projects-grid">
+        <article class="project-card">
+          <div class="project-head"><span class="project-lang project-lang--sql">PL/SQL</span><span class="project-status">stable</span></div>
+          <h3>Inventory Management Procedures</h3>
+          <p>A set of PL/SQL packages and triggers for stock tracking, automated reorder alerts, and audit logging on an Oracle database.</p>
+          <div class="project-tags"><span>Oracle</span><span>PL/SQL</span><span>Triggers</span></div>
+          <div class="project-links"><a href="#" class="project-link">Source →</a><a href="#" class="project-link">Details →</a></div>
+        </article>
+        <article class="project-card">
+          <div class="project-head"><span class="project-lang project-lang--py">Python</span><span class="project-status">active</span></div>
+          <h3>Automated Data Pipeline</h3>
+          <p>A Python ETL script that cleans, validates, and loads CSV data into a relational database on a scheduled job, with error logging.</p>
+          <div class="project-tags"><span>Python</span><span>Pandas</span><span>Automation</span></div>
+          <div class="project-links"><a href="#" class="project-link">Source →</a><a href="#" class="project-link">Details →</a></div>
+        </article>
+        <article class="project-card">
+          <div class="project-head"><span class="project-lang project-lang--web">Full-stack</span><span class="project-status">stable</span></div>
+          <h3>Student Records Portal</h3>
+          <p>A Flask web app backed by PL/SQL stored procedures for managing student enrollment, grades, and report generation.</p>
+          <div class="project-tags"><span>Flask</span><span>PL/SQL</span><span>REST API</span></div>
+          <div class="project-links"><a href="#" class="project-link">Source →</a><a href="#" class="project-link">Details →</a></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== CONTACT (with working links) ========== -->
+  <section class="section" id="contact">
+    <div class="section-inner">
+      <p class="section-eyebrow"><span class="tag">05</span> contact</p>
+      <h2 class="section-title">Let's connect.</h2>
+      <p class="section-sub">Open to roles and freelance work involving PL/SQL, Python, or backend systems.</p>
+      <div class="contact-grid">
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="field"><label for="name">name</label><input type="text" id="name" name="name" placeholder="Your full name" required><span class="field-error" id="err-name"></span></div>
+          <div class="field"><label for="email">email</label><input type="email" id="email" name="email" placeholder="you@example.com" required><span class="field-error" id="err-email"></span></div>
+          <div class="field"><label for="message">message</label><textarea id="message" name="message" rows="5" placeholder="Tell me about the opportunity or project..." required></textarea><span class="field-error" id="err-message"></span></div>
+          <button type="submit" class="btn btn-primary btn-block"><span class="btn-text">Send Message</span></button>
+          <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+        </form>
+
+        <!-- contact info with working links -->
+        <div class="contact-info">
+          <div class="contact-info-item">
+            <span class="contact-info-icon"><i class="fas fa-phone-alt"></i></span>
+            <div class="contact-info-content">
+              <span class="contact-info-label">Phone</span>
+              <span class="contact-info-value">+91 91938 84280</span>
+            </div>
+          </div>
+          <a class="contact-info-item" href="mailto:amanprataparyan@gmail.com">
+            <span class="contact-info-icon"><i class="fas fa-envelope"></i></span>
+            <div class="contact-info-content">
+              <span class="contact-info-label">Email</span>
+              <span class="contact-info-value">amanprataparyan@gmail.com</span>
+            </div>
+          </a>
+          <a class="contact-info-item" href="https://linkedin.com/in/aman-pratap-singh-2b84802b8" target="_blank" rel="noopener noreferrer">
+            <span class="contact-info-icon"><i class="fab fa-linkedin-in"></i></span>
+            <div class="contact-info-content">
+              <span class="contact-info-label">LinkedIn</span>
+              <span class="contact-info-value">linkedin.com/in/aman-pratap-singh-2b84802b8</span>
+            </div>
+          </a>
+          <a class="contact-info-item" href="https://github.com/amanpratapsingharyan" target="_blank" rel="noopener noreferrer">
+            <span class="contact-info-icon"><i class="fab fa-github"></i></span>
+            <div class="contact-info-content">
+              <span class="contact-info-label">GitHub</span>
+              <span class="contact-info-value">github.com/amanpratapsingharyan</span>
+            </div>
+          </a>
+          <div class="contact-info-item">
+            <span class="contact-info-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <div class="contact-info-content">
+              <span class="contact-info-label">Location</span>
+              <span class="contact-info-value">Bareilly, Uttar Pradesh, India</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <p>© <span id="year"></span> Aman Pratap Singh. Built with HTML, CSS &amp; JS.</p>
+  </div>
+</footer>
+
+<button class="to-top" id="toTop" aria-label="Back to top">↑</button>
+
+<script>
+  // ========== NAV / SCROLL ==========
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+  navToggle.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open');
+    navToggle.classList.toggle('open', isOpen);
+    navToggle.setAttribute('aria-expanded', isOpen);
+  });
+  document.querySelectorAll('.nav-link').forEach(link => {
+    link.addEventListener('click', () => {
+      navLinks.classList.remove('open');
+      navToggle.classList.remove('open');
+      navToggle.setAttribute('aria-expanded', 'false');
+    });
+  });
+
+  const sections = document.querySelectorAll('main .section, .hero');
+  const navLinkEls = document.querySelectorAll('.nav-link');
+  const setActiveLink = () => {
+    let current = '';
+    sections.forEach(sec => {
+      const top = sec.offsetTop - 140;
+      if (window.scrollY >= top) current = sec.getAttribute('id');
+    });
+    navLinkEls.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+    });
+  };
+
+  const scrollProgress = document.getElementById('scrollProgress');
+  const toTopBtn = document.getElementById('toTop');
+  const onScroll = () => {
+    setActiveLink();
+    const doc = document.documentElement;
+    const scrollTop = doc.scrollTop;
+    const max = doc.scrollHeight - doc.clientHeight;
+    scrollProgress.style.width = `${(scrollTop / max) * 100}%`;
+    toTopBtn.classList.toggle('show', scrollTop > 500);
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  toTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ========== HERO TYPING ==========
+  const typedLine = document.getElementById('typedLine');
+  const consoleResult = document.getElementById('consoleResult');
+  const typeText = "-- Result:";
+  function typeConsole() {
+    let i = 0;
+    const interval = setInterval(() => {
+      typedLine.textContent = typeText.slice(0, i + 1);
+      i++;
+      if (i >= typeText.length) {
+        clearInterval(interval);
+        setTimeout(() => consoleResult.classList.add('show'), 300);
+      }
+    }, 55);
+  }
+  window.addEventListener('load', () => setTimeout(typeConsole, 500));
+
+  // ========== REVEAL (general + skill bars) ==========
+  const revealTargets = document.querySelectorAll(
+    '.section-eyebrow, .section-title, .section-sub, .about-text, .about-stats li, ' +
+    '.log-item, .project-card, .contact-form, .contact-info-item, .skill-card'
+  );
+  revealTargets.forEach(el => el.classList.add('reveal'));
+
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        if (entry.target.classList.contains('skill-card')) {
+          entry.target.classList.add('in-view');
+        }
+        revealObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15 });
+
+  revealTargets.forEach(el => revealObserver.observe(el));
+
+  // ========== CONTACT FORM ==========
+  const form = document.getElementById('contactForm');
+  const formStatus = document.getElementById('formStatus');
+  const fields = {
+    name: { el: document.getElementById('name'), err: document.getElementById('err-name') },
+    email: { el: document.getElementById('email'), err: document.getElementById('err-email') },
+    message: { el: document.getElementById('message'), err: document.getElementById('err-message') },
+  };
+
+  function validateField(key) {
+    const { el, err } = fields[key];
+    let message = '';
+    if (!el.value.trim()) message = 'This field is required.';
+    else if (key === 'email') {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!re.test(el.value.trim())) message = 'Enter a valid email address.';
+    } else if (key === 'message' && el.value.trim().length < 10) {
+      message = 'Message should be at least 10 characters.';
+    }
+    err.textContent = message;
+    el.closest('.field').classList.toggle('error', Boolean(message));
+    return !message;
+  }
+
+  Object.keys(fields).forEach(key => {
+    fields[key].el.addEventListener('blur', () => validateField(key));
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const allValid = Object.keys(fields).map(validateField).every(Boolean);
+    if (!allValid) { formStatus.textContent = ''; return; }
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    formStatus.textContent = 'Sending...';
+    setTimeout(() => {
+      formStatus.textContent = '✓ Message ready — connect a backend/form service to actually deliver it.';
+      submitBtn.disabled = false;
+      form.reset();
+    }, 900);
+  });
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
