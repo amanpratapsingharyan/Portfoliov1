@@ -120,16 +120,23 @@
     }
     .nav-brand { display:flex; align-items:center; gap:.5rem; font-family:var(--font-mono); font-weight:600; font-size:1.05rem; }
     .nav-brand-mark{ color:var(--sql); }
-    .nav-links{ display:flex; gap:2rem; }
+    .nav-links{ 
+      display:flex; 
+      gap:2rem; 
+      align-items:center; 
+    }
     .nav-link {
       font-family:var(--font-mono); font-size:.85rem; color:var(--text-dim);
       display:flex; align-items:center; transition:color .2s;
-      background: var(--bg);
     }
     .nav-link:hover, .nav-link.active{ color:var(--text); }
     .nav-link.active .tag{ color:var(--py); }
+    .nav-cta { 
+      display:inline-flex;
+    }
     .nav-toggle {
       display:none; flex-direction:column; gap:5px; background:none; border:none; padding:8px;
+      cursor:pointer;
     }
     .nav-toggle span{ width:22px; height:2px; background:var(--text); border-radius:2px; transition:transform .3s var(--ease), opacity .3s; }
     .nav-toggle.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
@@ -215,6 +222,7 @@
       color:var(--text); font-size:.8rem; background:var(--surface-alt);
       padding:.6rem .5rem; border-radius:6px; border:1px solid var(--border-soft);
     }
+    .result-foot { margin-top:.4rem; color:var(--text-faint); font-size:.7rem; }
 
     /* ---------- ABOUT (improved) ---------- */
     .about-grid{
@@ -485,7 +493,10 @@
 
     /* ---------- RESPONSIVE ---------- */
     @media (max-width: 980px){
-      .hero-inner{ grid-template-columns:1fr; }
+      .hero-inner{ 
+        grid-template-columns:1fr; 
+        gap:2rem;
+      }
       .hero-console{ order:-1; }
       .about-grid{ grid-template-columns:1fr; }
       .about-stats{ grid-template-columns:1fr 1fr; }
@@ -494,18 +505,55 @@
     }
     @media (max-width: 760px){
       .nav-links{
-        position:fixed; top:72px; left:0; right:0; bottom:0;
-        background:var(--bg); flex-direction:column; gap:0;
-        padding:1rem 2rem; transform:translateX(100%); transition:transform .35s var(--ease);
+        position:fixed; 
+        top:0; 
+        left:0; 
+        right:0; 
+        bottom:0;
+        background:var(--bg); 
+        flex-direction:column; 
+        gap:0;
+        padding:80px 2rem 2rem 2rem;
+        transform:translateX(100%); 
+        transition:transform .35s var(--ease);
         border-top:1px solid var(--border-soft);
+        overflow-y:auto;
+        align-items:stretch;
+        z-index:999;
+        width:100%;
+        height:100vh;
       }
-      .nav-links.open{ transform:translateX(0); }
-      .nav-link{ padding:1rem 0; border-bottom:1px solid var(--border-soft); font-size:1rem; }
-      .nav-toggle{ display:flex; }
+      .nav-links.open{ 
+        transform:translateX(0); 
+      }
+      .nav-link{ 
+        padding:1rem 0; 
+        border-bottom:1px solid var(--border-soft); 
+        font-size:1.1rem; 
+        background:transparent;
+        color:var(--text);
+      }
+      .nav-cta {
+        display:inline-flex;
+        justify-content:center;
+        margin:1.5rem 0 0.5rem 0;
+        background:var(--surface);
+        border-color:var(--border);
+        padding:0.85em 1.6em;
+        width:100%;
+      }
+      .nav-toggle{ 
+        display:flex; 
+        z-index:1001;
+      }
       .projects-grid{ grid-template-columns:1fr; }
       .about-stats{ grid-template-columns:1fr; }
       .skills-grid { grid-template-columns:1fr; }
       .contact-info-item { padding: 0.8rem 1rem; }
+      /* hero order: name first, console after */
+      .hero-inner { display:flex; flex-direction:column; }
+      .hero-console { order:2; width:100%; }
+      .hero-copy { order:1; }
     }
     @media (max-width: 480px){
       .section{ padding:5rem 0; }
@@ -532,8 +580,9 @@
       <a href="#education" class="nav-link"><span class="tag">03</span>education</a>
       <a href="#projects" class="nav-link"><span class="tag">04</span>projects</a>
       <a href="#contact" class="nav-link"><span class="tag">05</span>contact</a>
+      <!-- connect() button moved inside nav for mobile -->
+      <a href="#contact" class="btn btn-ghost nav-cta" id="navCta">connect()</a>
     </nav>
-    <a href="#contact" class="btn btn-ghost nav-cta">connect()</a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
@@ -803,12 +852,15 @@
   // ========== NAV / SCROLL ==========
   const navToggle = document.getElementById('navToggle');
   const navLinks = document.getElementById('navLinks');
+  
   navToggle.addEventListener('click', () => {
     const isOpen = navLinks.classList.toggle('open');
     navToggle.classList.toggle('open', isOpen);
     navToggle.setAttribute('aria-expanded', isOpen);
+    console.log('Menu toggled:', isOpen); // Debug log
   });
-  document.querySelectorAll('.nav-link').forEach(link => {
+  
+  document.querySelectorAll('.nav-link, .nav-cta').forEach(link => {
     link.addEventListener('click', () => {
       navLinks.classList.remove('open');
       navToggle.classList.remove('open');
