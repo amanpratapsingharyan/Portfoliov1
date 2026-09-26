@@ -789,7 +789,8 @@
       <h2 class="section-title">Let's connect.</h2>
       <p class="section-sub">Open to roles and freelance work involving PL/SQL, Python, or backend systems.</p>
       <div class="contact-grid">
-        <form class="contact-form" id="contactForm" novalidate>
+        <form action="https://api.web3forms.com/submit" method="POST" class="contact-form" id="contactForm" novalidate>
+           <input type="hidden" name="access_key" value="c6aa8942-e924-4dd4-a420-a39262b8666d">
           <div class="field"><label for="name">name</label><input type="text" id="name" name="name" placeholder="Your full name" required><span class="field-error" id="err-name"></span></div>
           <div class="field"><label for="email">email</label><input type="email" id="email" name="email" placeholder="you@example.com" required><span class="field-error" id="err-email"></span></div>
           <div class="field"><label for="message">message</label><textarea id="message" name="message" rows="5" placeholder="Tell me about the opportunity or project..." required></textarea><span class="field-error" id="err-message"></span></div>
